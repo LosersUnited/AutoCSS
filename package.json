@@ -1,4 +1,17 @@
 {
+	"name": "AutoCSS",
+	"version": "1.0.0",
+	"description": "AutoCSS is a tool that allows discord mod theme devs to generate their css classes based off props.",
+	"keywords": [],
+	"contributors": [
+		{
+			"name": "zrodevkaan"
+		},
+		{
+			"name": "Davilarek"
+		}
+	],
+	"license": "ISC",
 	"devDependencies": {
 		"@types/node": "^20.12.5"
 	}
