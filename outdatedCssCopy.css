@@ -1,0 +1,8 @@
+:root {
+    --colour-1: rgba(0,0,255,.2); /*base value: rgba(0,0,255,.2). Change the .2 to change the opacity.*/
+    --colour-2: rgba(0,255,0,.2); /*base value: rgba(0,255,0,.2)*/
+    --colour-3: rgba(255,255,0,.2); /*base value: rgba(255,255,0,.2)*/
+    --colour-4: rgba(255,0,0,.2); /*base value: rgba(255,0,0,.2)*/
+}
+
+.['messageContent'].messageContent {display: none;}

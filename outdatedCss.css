@@ -1,0 +1,18 @@
+:root {
+    --colour-1: rgba(0,0,255,.2); /*base value: rgba(0,0,255,.2). Change the .2 to change the opacity.*/
+    --colour-2: rgba(0,255,0,.2); /*base value: rgba(0,255,0,.2)*/
+    --colour-3: rgba(255,255,0,.2); /*base value: rgba(255,255,0,.2)*/
+    --colour-4: rgba(255,0,0,.2); /*base value: rgba(255,0,0,.2)*/
+}
+.mentioned__58017 .contents_f41bb2 > .messageContent__21e69{
+    background: linear-gradient(90deg,var(--colour-1),var(--colour-2),var(--colour-3),var(--colour-4));;
+    border-radius: 8px;
+    z-index: 2;
+    margin-left: 0px;
+    padding-left: 0px;
+    width: calc(100% + 48px);
+}
+.message__80c10.mentioned__58017.selected_fd9051, .mouse-mode.full-motion .mentioned__58017:hover, .mentioned__58017 
+{
+    background: transparent!important;
+}
