@@ -116,9 +116,10 @@ async function fetchFullDiscordCSSDefinitions() {
         },
     });
     */
-    const result = new Array<{ [key: string]: string }>();
-    const cache: { [key: string]: any } = {};
+    // const result = new Array<{ [key: string]: string }>();
+    // const cache: { [key: string]: any } = {};
     // const queued: string[] = [];
+    /*
     for (let index = 0; index < evaluatedScripts.length; index++) {
         const evaluatedScript = evaluatedScripts[index];
         console.log("next script", evaluatedScript.path);
@@ -126,13 +127,14 @@ async function fetchFullDiscordCSSDefinitions() {
             const fakeWebpack = { exports: undefined };
             // console.log(id);
             if (cache[id] == undefined) {
-                /*
+    /*
                 if (evaluatedScript.value[id] == undefined) {
                     queued.push(id);
                     queued.push(parent);
                     return {};
                 }
-                */
+    */
+    /*
                 if (evaluatedScript.value[id] == undefined) {
                     evaluatedScripts.find(x => x.value[id])?.value[id](fakeWebpack, undefined, (id: string) => fakeRequire(id, parent));
                     cache[id] = fakeWebpack.exports;
@@ -152,6 +154,7 @@ async function fetchFullDiscordCSSDefinitions() {
             result.push(cache[key] ?? fakeWebpack.exports);
         });
     }
+    */
     /*
     for (let index = 0; index < queued.length; index++) {
         const element = queued[index];
@@ -166,6 +169,60 @@ async function fetchFullDiscordCSSDefinitions() {
         };
     }
     */
+    const cache: { [key: string]: any } = {};
+    const result = {
+        evaluatedScripts,
+        find(predicate: (element: any) => boolean) {
+            for (let index = 0; index < evaluatedScripts.length; index++) {
+                const evaluatedScript = evaluatedScripts[index];
+                const modules = Object.keys(evaluatedScript.value);
+                const fakeArray: { module: string; hasOwnProperty(prop: string): boolean; }[] = [];
+                modules.forEach((x) => {
+                    const fakeObject = {
+                        module: "",
+                        hasOwnProperty(prop: string) { // and this is, kids, why you don't do something.hasOwnProperty() but Object.prototype.hasOwnProperty.call(something)
+                            const regex = new RegExp("({|,)(" + prop + "):", "g");
+                            if (regex.test(evaluatedScript.value[x].toString())) {
+                                this.module = x;
+                                return true;
+                            }
+                            return false;
+                        }
+                    };
+                    fakeArray.push(fakeObject);
+                });
+                // const foundOrNot = modules.filter(x=>evaluatedScript.value[x].toString().includes())
+                const foundOrNot = fakeArray.find(predicate);
+                fakeArray.length = 0;
+                if (foundOrNot) {
+                    const fakeRequire = (id: string) => {
+                        const fakeWebpack2 = { exports: undefined as unknown as { [key: string]: string } };
+                        // console.log(id);
+                        if (cache[id] == undefined) {
+                            if (evaluatedScript.value[id] == undefined) {
+                                evaluatedScripts.find(x => x.value[id])?.value[id](fakeWebpack2, undefined, fakeRequire);
+                                cache[id] = fakeWebpack2.exports;
+                                return cache[id];
+                            }
+                            evaluatedScript.value[id](fakeWebpack2, undefined, fakeRequire);
+                            cache[id] = fakeWebpack2.exports;
+                        }
+                        return cache[id] ?? fakeWebpack2.exports;
+                    };
+
+                    const foundModule = foundOrNot.module;
+                    if (cache[foundModule] == undefined) {
+                        const builder = evaluatedScript.value[foundModule];
+                        const fakeWebpack = { exports: undefined as unknown as { [key: string]: string } };
+                        builder(fakeWebpack, undefined, fakeRequire);
+                        cache[foundModule] = fakeWebpack.exports;
+                    }
+                    return cache[foundModule];
+                }
+            }
+            return undefined;
+        },
+    };
     return result;
 }
 
