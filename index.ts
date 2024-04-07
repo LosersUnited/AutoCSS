@@ -14,11 +14,12 @@ import * as path from 'path';
 }*/
 
 function replaceClassNamesByRegex(cssString: string, jsonFile: { [key: string]: string }[]): string {
-    return cssString.replace(/\[([^\]]+)]\.([^\s{]+)/g, (match, group1, group2) => {
-        for (const key in jsonFile) {
-            if (Object.prototype.hasOwnProperty.call(jsonFile, key) && jsonFile[key][group2] !== undefined) {
-                return jsonFile[key][group2];
-            }
+    return cssString.replace(/(\[\"\w+.+\]).(\w+)/g, (match, group1, group2) => {
+        const targetProps: string[] = JSON.parse(group1); // too lazy
+        console.log(match, targetProps);
+        const targetClassName = jsonFile.find(x => targetProps.every(key => x && x.hasOwnProperty(key)));
+        if (targetClassName) {
+            return targetClassName[group2];
         }
         return match;
     });
