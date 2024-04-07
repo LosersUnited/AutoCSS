@@ -66,7 +66,7 @@ findByPropsLazy('sizeLarge').sizeLarge
 ```
 
 How AutoCSS works is like this, you pass in some props and it works, but 
-sometimes youll have to add more props to find your className
+sometimes you'll have to add more props to find your className
 Let's say we want `emojiContainer__8da7f` but we really get `emojiContainer__31342`
 
 That's where we add `['emojiContainer','emojiContainerClickable']` instead of
