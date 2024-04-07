@@ -1,4 +1,5 @@
 ﻿const fs = require('fs');
+const fetcher = require('./fetcher');
 
 function readJSONFile(filename: string) {
     try {
@@ -10,7 +11,7 @@ function readJSONFile(filename: string) {
     }
 }
 
-function replaceClassNamesByRegex(cssString: string, jsonFile: any): string {
+function replaceClassNamesByRegex(cssString: string, jsonFile: { [key: string]: string }[]): string {
     return cssString.replace(/\[([^\]]+)]\.([^\s{]+)/g, (match, group1, group2) => {
         for (const key in jsonFile) {
             if (jsonFile.hasOwnProperty(key) && jsonFile[key][group2] !== undefined) {
@@ -27,13 +28,17 @@ fs.readFile('test.css', 'utf8', (err: any, cssString: any) => {
         return;
     }
 
-    fs.readFile('modulesData.json', 'utf8', (err: any, data: any) => {
+    /*fs.readFile('modulesData.json', 'utf8', (err: any, data: any) => {
         if (err) {
             console.error('Error reading JSON file:', err);
             return;
         }
 
         const jsonFile = JSON.parse(data);
+        const updatedCSS = replaceClassNamesByRegex(cssString, jsonFile);
+        console.log(updatedCSS);
+    });*/
+    fetcher.fetchFullDiscordCSSDefinitions().then((jsonFile: { [key: string]: string }[]) => {
         const updatedCSS = replaceClassNamesByRegex(cssString, jsonFile);
         console.log(updatedCSS);
     });
