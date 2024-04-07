@@ -2,8 +2,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-
-function readJSONFile(filename: string): { [key: string]: string }[] | null {
+// we dont need this awesome method right now ;3
+/*function readJSONFile(filename: string): { [key: string]: string }[] | null {
     try {
         const data = fs.readFileSync(filename, 'utf8');
         return JSON.parse(data);
@@ -11,7 +11,7 @@ function readJSONFile(filename: string): { [key: string]: string }[] | null {
         console.error('Error reading JSON file:', err);
         return null;
     }
-}
+}*/
 
 function replaceClassNamesByRegex(cssString: string, jsonFile: { [key: string]: string }[]): string {
     return cssString.replace(/\[([^\]]+)]\.([^\s{]+)/g, (match, group1, group2) => {
