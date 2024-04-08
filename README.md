@@ -84,3 +84,44 @@ Click on the `.js` file
 ![img.png](imgs/showExports.png)
 
 And there you go! There is your props to search for!
+
+For a example plugin my beloved made (Pastel Love)
+```css
+:root {
+    --colour-1: rgba(0,0,255,.2); /*base value: rgba(0,0,255,.2). Change the .2 to change the opacity.*/
+    --colour-2: rgba(0,255,0,.2); /*base value: rgba(0,255,0,.2)*/
+    --colour-3: rgba(255,255,0,.2); /*base value: rgba(255,255,0,.2)*/
+    --colour-4: rgba(255,0,0,.2); /*base value: rgba(255,0,0,.2)*/
+}
+
+.["quotedChatMessage"].mentioned .["appLauncherOnboardingCommandName"].contents > .["appLauncherOnboardingCommandName"].messageContent {
+   background: linear-gradient(90deg,var(--colour-1),var(--colour-2),var(--colour-3),var(--colour-4));;
+   border-radius: 8px;
+   z-index: 2;
+   margin-left: 0px;
+   padding-left: 0px;
+   width: calc(100% + 48px);
+}
+.["quotedChatMessage"].message.["quotedChatMessage"].mentioned.["quotedChatMessage"].selected, .mouse-mode.full-motion .["quotedChatMessage"].mentioned:hover, ["quotedChatMessage"].mentioned {background: transparent!important;}
+```
+Gets converted to this!
+```css
+:root {
+    --colour-1: rgba(0,0,255,.2); /*base value: rgba(0,0,255,.2). Change the .2 to change the opacity.*/
+    --colour-2: rgba(0,255,0,.2); /*base value: rgba(0,255,0,.2)*/
+    --colour-3: rgba(255,255,0,.2); /*base value: rgba(255,255,0,.2)*/
+    --colour-4: rgba(255,0,0,.2); /*base value: rgba(255,0,0,.2)*/
+}
+.mentioned_fa6fd2 .contents_d3ae0d > .messageContent_abea64 {
+    background: linear-gradient(90deg,var(--colour-1),var(--colour-2),var(--colour-3),var(--colour-4));
+    border-radius: 8px;
+    z-index: 2;
+    margin-left: 0px;
+    padding-left: 0px;
+    width: calc(100% + 48px);
+}
+.message_ccca67.mentioned_fa6fd2.selected_e3bc5d, .mouse-mode.full-motion .mentioned_fa6fd2:hover, mentioned_fa6fd2 {background: transparent!important;}
+```
+
+Hopefully this makes css developers not have to remake their themes each time discord
+rerolls classNames.
