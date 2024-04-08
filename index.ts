@@ -14,7 +14,7 @@ import * as path from 'path';
 }*/
 
 function replaceClassNamesByRegex(cssString: string, jsonFile: { [key: string]: string }[]): string {
-    return cssString.replace(/(\[\"\w+.+\]).(\w+)/g, (match, group1, group2) => {
+    return cssString.replace(/(\[\"\w+.+?\]).(\w+)/g, (match, group1, group2) => {
         const targetProps: string[] = JSON.parse(group1); // too lazy
         console.log(match, targetProps);
         const targetClassName = jsonFile.find(x => targetProps.every(key => x && x.hasOwnProperty(key)));
