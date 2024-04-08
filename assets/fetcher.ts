@@ -15,6 +15,8 @@ const TEXT_CONSTANTS = {
     scriptEnd: "</script>",
 };
 
+const MODULE_MATCHER_REGEX = (propName: string) => `({|,)(${propName}):`;
+
 const USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.3";
 const utils = require("./utils");
 
@@ -181,7 +183,7 @@ async function fetchFullDiscordCSSDefinitions() {
                     const fakeObject = {
                         module: "",
                         hasOwnProperty(prop: string) { // and this is, kids, why you don't do something.hasOwnProperty() but Object.prototype.hasOwnProperty.call(something)
-                            const regex = new RegExp("({|,)(" + prop + "):", "g");
+                            const regex = new RegExp(MODULE_MATCHER_REGEX(prop), "g");
                             if (regex.test(evaluatedScript.value[x].toString())) {
                                 this.module = x;
                                 return true;

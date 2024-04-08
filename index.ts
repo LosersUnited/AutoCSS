@@ -2,7 +2,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-// we dont need this awesome method right now ;3
+// we don't need this awesome method right now ;3
 /*function readJSONFile(filename: string): { [key: string]: string }[] | null {
     try {
         const data = fs.readFileSync(filename, 'utf8');
@@ -13,8 +13,10 @@ import * as path from 'path';
     }
 }*/
 
+const REPLACEMENT_REGEX = /(\[\"\w+.+?\]).(\w+)/g;
+
 function replaceClassNamesByRegex(cssString: string, jsonFile: { [key: string]: string }[]): string {
-    return cssString.replace(/(\[\"\w+.+?\]).(\w+)/g, (match, group1, group2) => {
+    return cssString.replace(REPLACEMENT_REGEX, (match, group1, group2) => {
         const targetProps: string[] = JSON.parse(group1); // too lazy
         console.log(match, targetProps);
         const targetClassName = jsonFile.find(x => targetProps.every(key => x && x.hasOwnProperty(key)));
@@ -41,7 +43,7 @@ function startConverting(filePath: string): void {
 
 const args: string[] = process.argv.slice(2);
 if (args.length !== 1) {
-    console.error('Usage: npx ts-node index.ts  <file>');
+    console.error('Usage:\n\tnpx ts-node index.ts <file>');
     process.exit(1);
 }
 

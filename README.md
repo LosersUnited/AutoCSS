@@ -123,5 +123,15 @@ Gets converted to this!
 .message_ccca67.mentioned_fa6fd2.selected_e3bc5d, .mouse-mode.full-motion .mentioned_fa6fd2:hover, mentioned_fa6fd2 {background: transparent!important;}
 ```
 
+# Errors
+
+1. ENOENT Error:
+   if you get the error below
+   ```javascript
+      npm ERR! enoent ENOENT: no such file or directory,
+   ```
+   Run `npm install -g npm`, then run the `npx ts-node index.ts fileName<.css | optional>` command again 
+
+
 Hopefully this makes css developers not have to remake their themes each time discord
 rerolls classNames.
