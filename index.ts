@@ -1,4 +1,4 @@
-﻿const fetcher = require('./fetcher');
+﻿const fetcher = require('./assets/fetcher');
 import * as fs from 'fs';
 import * as path from 'path';
 
