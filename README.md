@@ -7,13 +7,21 @@ Active Development progress will commence shortly.
 
 To utilize AutoCSS, follow these steps:
 
-1. Install dependencies:
+1. Install NodeJS
+[Download Here](https://nodejs.org/en/download)
+
+2. Install pnpm
 ```javascript
-pnpm | npm i
+npx pnpm i -g pnpm@latest
 ```
-2. Execute with given file.
+
+3. Install dependencies:
 ```javascript
- npx ts-node index.ts fileName<.css | optional>
+pnpm i
+```
+4. Execute with given file.
+```javascript
+ npx ts-node index.ts <fileName> (.css | optional)
     
  // Our system will automatically apply .css 
  // The file needs to be in the same dir of the project
