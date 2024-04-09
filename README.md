@@ -12,7 +12,7 @@ To utilize AutoCSS, follow these steps:
 
 2. Install pnpm
 ```javascript
-npx pnpm i -g pnpm@latest
+npx pnpm i -g pnpm@latest | npm i -g pnpm@latest
 ```
 
 3. Install dependencies:
