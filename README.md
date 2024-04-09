@@ -37,6 +37,7 @@ This is how the .css file should be structured for full functionality
 
 > [!IMPORTANT]
 > AutoCSS does NOT change how normal css works
+> 
 > We only find our structure and replace it.
 
 ```css
@@ -96,9 +97,9 @@ Let's say we want `emojiContainer__8da7f` but we really get `emojiContainer__313
 That's where we add `['emojiContainer','emojiContainerClickable']` instead of
 `['emojiContainer']`
 
-The way you search for these is by search discords source to find what you want.
+The way you find these is by searching discords source to find what you want.
 
-If I want `emojiContainer__8da7f` Open console, `CTRL + SHIFT + F`, Search for `emojiContainer__8da7f`
+If I want `emojiContainer__8da7f`, Open console, `CTRL + SHIFT + F`, Search for `emojiContainer__8da7f`
 It should hopefully look something like this.
 
 ![img.png](imgs/consoleShowClassNameLocation.png)
