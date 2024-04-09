@@ -5,6 +5,9 @@ Active Development progress will commence shortly.
 
 ## Usage
 
+> [!IMPORTANT]
+> Please actually read EVERYTHING under, once you follow the installation process you will figure out how this tool works
+
 To utilize AutoCSS, follow these steps:
 
 1. Install NodeJS
