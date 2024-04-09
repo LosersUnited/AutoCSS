@@ -1,6 +1,8 @@
 ﻿const fetcher = require('./assets/fetcher');
 import * as fs from 'fs';
 import * as path from 'path';
+import { promisify } from 'util';
+const writeFileAsync = promisify(fs.writeFile);
 
 // we don't need this awesome method right now ;3
 /*function readJSONFile(filename: string): { [key: string]: string }[] | null {
@@ -27,18 +29,31 @@ function replaceClassNamesByRegex(cssString: string, jsonFile: { [key: string]: 
     });
 }
 
-function startConverting(filePath: string): void {
-    fs.readFile(filePath, 'utf8', (err: NodeJS.ErrnoException | null, cssString: string | Buffer) => {
-        if (err) {
-            console.error('Error reading CSS file:', err);
-            return;
+async function startConverting(inputFilePath: string): Promise<void> {
+    const outputFolder = 'build';
+    const fileName = path.basename(inputFilePath, path.extname(inputFilePath));
+    const outputPath = path.join(outputFolder, fileName);
+
+    if (!fs.existsSync(outputFolder)) {
+        fs.mkdirSync(outputFolder);
+    }
+
+    try {
+        if (!fs.existsSync(inputFilePath)) {
+            fs.writeFileSync(inputFilePath, '');
         }
 
-        fetcher.fetchFullDiscordCSSDefinitions().then((jsonFile: { [key: string]: string }[]) => {
-            const updatedCSS = replaceClassNamesByRegex(cssString.toString(), jsonFile);
-            console.log(updatedCSS);
-        });
-    });
+        const cssString = await fs.promises.readFile(inputFilePath, 'utf8');
+
+        const jsonFile = await fetcher.fetchFullDiscordCSSDefinitions();
+        const updatedCSS = replaceClassNamesByRegex(cssString, jsonFile);
+
+        await writeFileAsync(outputPath+".css", updatedCSS);
+
+        console.log(`Updated CSS has been written to ${outputPath}`);
+    } catch (err) {
+        console.error('Error:', err);
+    }
 }
 
 const args: string[] = process.argv.slice(2);
