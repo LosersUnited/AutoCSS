@@ -25,13 +25,19 @@ pnpm i
 4. Execute with given file.
 ```javascript
  npx ts-node index.ts <fileName> (.css | optional)
-    
+
+ // Example: npx ts-node index.ts test
+
  // Our system will automatically apply .css 
  // The file needs to be in the same dir of the project
 ```
 
 # Template
 This is how the .css file should be structured for full functionality
+
+> [!IMPORTANT]
+> AutoCSS does NOT change how normal css works
+> We only find our structure and replace it.
 
 ```css
 .['sizeLarge'].sizeLarge 
@@ -43,18 +49,25 @@ This is how the .css file should be structured for full functionality
 Don't worry! you can still have files like this
 ```css
 
+/* Single AutoCSS */
 .['sizeLarge'].sizeLarge
 {
   display: none;
 }
 
-.mentioned__58017 .contents_f41bb2 > .messageContent__21e69{
+/* AutoCSS + Normal CSS */
+.mentioned__58017 .['contents'].contents > .messageContent__21e69{
     background: linear-gradient(90deg,var(--colour-1),var(--colour-2),var(--colour-3),var(--colour-4));;
     border-radius: 8px;
     z-index: 2;
     margin-left: 0px;
     padding-left: 0px;
     width: calc(100% + 48px);
+}
+/* AutoCSS Hover Example */
+.['username'].username:hover
+{
+  display: none;
 }
 ```
 
@@ -91,6 +104,7 @@ It should hopefully look something like this.
 ![img.png](imgs/consoleShowClassNameLocation.png)
 
 Click on the `.js` file
+(The area next to the `1.` under the file name.)
 
 ![img.png](imgs/showExports.png)
 
@@ -141,8 +155,7 @@ Gets converted to this!
    ```javascript
       npm ERR! enoent ENOENT: no such file or directory,
    ```
-   Run `npm install -g npm`, then run the `npx ts-node index.ts fileName<.css | optional>` command again 
+   Run `npm install -g npm`, then run the `npx ts-node index.ts <fileName> (.css | optional)` command again 
 
-
-Hopefully this makes css developers not have to remake their themes each time discord
+Hopefully Due to most themes being thousands of lines, this makes css developers not have to remake their themes each time discord
 rerolls classNames.
