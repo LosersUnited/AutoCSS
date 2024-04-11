@@ -1,4 +1,4 @@
-function getTextBetween(text: string, start: string, end: string) {
+export function getTextBetween(text: string, start: string, end: string) {
     const results = [];
     let startIndex = 0;
 
@@ -17,10 +17,6 @@ function getTextBetween(text: string, start: string, end: string) {
     }
     return results;
 }
-const delay = (milliseconds: number) => new Promise<void>((resolve, reject) => {
+export const delay = (milliseconds: number) => new Promise<void>((resolve, reject) => {
 	setTimeout(_ => resolve(), milliseconds);
 });
-module.exports = {
-    getTextBetween,
-    delay,
-};

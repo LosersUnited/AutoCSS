@@ -1,4 +1,4 @@
-﻿const fetcher = require('./assets/fetcher');
+﻿import * as fetcher from './assets/fetcher';
 import * as fs from 'fs';
 import * as path from 'path';
 import { promisify } from 'util';
@@ -49,7 +49,7 @@ async function startConverting(inputFilePath: string): Promise<void> {
         const jsonFile = await fetcher.fetchFullDiscordCSSDefinitions();
         const updatedCSS = replaceClassNamesByRegex(cssString, jsonFile);
 
-        await writeFileAsync(outputPath+".css", updatedCSS);
+        await writeFileAsync(outputPath + ".css", updatedCSS);
 
         console.log(`Updated CSS has been written to ${outputPath}`);
     } catch (err) {
