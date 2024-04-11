@@ -18,7 +18,7 @@ const TEXT_CONSTANTS = {
 const MODULE_MATCHER_REGEX = (propName: string) => `({|,)(${propName}):`;
 
 const USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.3";
-const utils = require("./utils");
+import * as utils from "./utils";
 
 function fetchDiscordPage() {
     return fetch(`https://${DISCORD_DOMAIN}${DISCORD_APP_PATH}`, {
@@ -99,7 +99,7 @@ function evaluateScripts(convertedScripts: PreparedScript[]) {
     return results;
 }
 
-async function fetchFullDiscordCSSDefinitions() {
+export async function fetchFullDiscordCSSDefinitions() {
     const response = await fetchDiscordPage();
     const responseAsText = await response.text();
     const foundScripts = findScripts(responseAsText);
@@ -227,7 +227,3 @@ async function fetchFullDiscordCSSDefinitions() {
     };
     return result;
 }
-
-module.exports = {
-    fetchFullDiscordCSSDefinitions,
-};
