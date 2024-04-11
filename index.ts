@@ -15,7 +15,8 @@ const writeFileAsync = promisify(fs.writeFile);
     }
 }*/
 
-const REPLACEMENT_REGEX = /(\[\"\w+.+?\]).(\w+)/g;
+// thankies shady. regex go brerrr
+const REPLACEMENT_REGEX = /(\[["']\w+.+?]).(\w+)/g;
 
 function replaceClassNamesByRegex(cssString: string, jsonFile: { [key: string]: string }[]): string {
     return cssString.replace(REPLACEMENT_REGEX, (match, group1, group2) => {
