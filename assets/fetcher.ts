@@ -99,14 +99,19 @@ function evaluateScripts(convertedScripts: PreparedScript[]) {
     return results;
 }
 
+const cachedScripts: EvaluatedScript[] = [];
+
 export async function fetchFullDiscordCSSDefinitions() {
-    const response = await fetchDiscordPage();
-    const responseAsText = await response.text();
-    const foundScripts = findScripts(responseAsText);
-    const fetchedScripts = await fetchScripts(foundScripts);
-    const foundCSSModulesScripts = findCSSModulesScripts(fetchedScripts);
-    const convertedScripts = convertScriptSourceCode(foundCSSModulesScripts);
-    const evaluatedScripts = evaluateScripts(convertedScripts);
+    if (cachedScripts.length == 0) {
+        const response = await fetchDiscordPage();
+        const responseAsText = await response.text();
+        const foundScripts = findScripts(responseAsText);
+        const fetchedScripts = await fetchScripts(foundScripts);
+        const foundCSSModulesScripts = findCSSModulesScripts(fetchedScripts);
+        const convertedScripts = convertScriptSourceCode(foundCSSModulesScripts);
+        cachedScripts.push(...evaluateScripts(convertedScripts));
+    }
+    const evaluatedScripts = [...cachedScripts];
     /*
     const proxy = new Proxy([], {
         get(target, prop, receiver) {
@@ -225,5 +230,5 @@ export async function fetchFullDiscordCSSDefinitions() {
             return undefined;
         },
     };
-    return result;
+    return result as unknown as { [key: string]: any }[];
 }
