@@ -4,6 +4,7 @@ import * as path from 'path';
 import { promisify } from 'util';
 import {EvaluatedScript} from "./assets/types";
 const writeFileAsync = promisify(fs.writeFile);
+const readdir = promisify(fs.readdir);
 
 // we don't need this awesome method right now ;3
 /*function readJSONFile(filename: string): { [key: string]: string }[] | null {
@@ -19,10 +20,7 @@ const writeFileAsync = promisify(fs.writeFile);
 // thankies shady. regex go brerrr
 const REPLACEMENT_REGEX = /(\[["']\w+.+?]).(\w+)/g;
 
-function replaceClassNamesByRegex(cssString: string, jsonFile: {
-    find(predicate: (element: any) => boolean): (any);
-    evaluatedScripts: EvaluatedScript[]
-}): string {
+function replaceClassNamesByRegex(cssString: string, jsonFile: { [p: string]: any }[]): string {
     return cssString.replace(REPLACEMENT_REGEX, (match, group1: string, group2) => {
         const modifiedGroup = group1.replace(/'/g, "\""); 
         // JSON.parse can't parse single quotes....?
@@ -67,6 +65,19 @@ async function startConverting(inputFilePath: string, optionalFilePath: string):
 
 
 const args: string[] = process.argv.slice(2);
+if (args.includes("--help") || args.length == 0) {
+    console.error('Usage:\n\tnpx ts-node index.ts <file or directory>');
+    process.exit(1);
+}
+
+async function getFiles(dir: string): Promise<string[]> {
+    const direntArr = await readdir(dir, { withFileTypes: true });
+    const files = await Promise.all<string[] | string>(direntArr.map((dirent) => {
+        const res = path.resolve(dir, dirent.name);
+        return dirent.isDirectory() ? getFiles(res) : res;
+    }));
+    return Array.prototype.concat(...files);
+}
 
 let inputPath: string = args[0];
 console.log(args)
@@ -77,5 +88,15 @@ if (inputPath) {
         inputPath += '.css'; // we can try if the user doesn't wanna add .css or forgets to.
         resolvedPath = path.resolve(inputPath);
     }
-    startConverting(resolvedPath, optionalFilePath);
+    if (fs.statSync(resolvedPath).isDirectory()) {
+        (async () => {
+            const paths = await getFiles(resolvedPath);
+            for (let index = 0; index < paths.length; index++) {
+                const element = paths[index];
+                startConverting(element, optionalFilePath);
+            }
+        })();
+    }
+    else
+        startConverting(resolvedPath, optionalFilePath);
 }
