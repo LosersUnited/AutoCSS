@@ -24,9 +24,9 @@ function replaceClassNamesByRegex(cssString: string, jsonFile: {
     evaluatedScripts: EvaluatedScript[]
 }): string {
     return cssString.replace(REPLACEMENT_REGEX, (match, group1: string, group2) => {
-        const modifiedGroup = group1.replace(/'/g, "\"");
+        const modifiedGroup = group1.replace(/'/g, "\""); 
+        // JSON.parse can't parse single quotes....?
         const targetProps: string[] = JSON.parse(modifiedGroup);
-        console.log(match, targetProps);
         const targetClassName = jsonFile.find(x => targetProps.every(key => x && x.hasOwnProperty(key)));
         if (targetClassName) {
             return targetClassName[group2];
