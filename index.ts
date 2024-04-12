@@ -2,6 +2,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { promisify } from 'util';
+import {EvaluatedScript} from "./assets/types";
 const writeFileAsync = promisify(fs.writeFile);
 
 // we don't need this awesome method right now ;3
@@ -14,7 +15,7 @@ const writeFileAsync = promisify(fs.writeFile);
         return null;
     }
 }*/
-type EvaluatedScript = { path: string, value: any };
+
 // thankies shady. regex go brerrr
 const REPLACEMENT_REGEX = /(\[["']\w+.+?]).(\w+)/g;
 
