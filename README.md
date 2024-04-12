@@ -35,7 +35,7 @@ pnpm i
 ```
 
 # Template
-This is how the .css file should be structured for full functionality
+This is how the file should be structured for full functionality
 
 > [!IMPORTANT]
 > AutoCSS does NOT change how normal css works
