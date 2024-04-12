@@ -4,4 +4,4 @@
               
 .["buttons"].buttons {background-color: azure}
 
-.["emojiContainer","emojiContainerClickable"].emojiContainer { color: #000; }
+.["barBase"].newMessagesBar { color: #000; }
