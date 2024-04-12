@@ -1,3 +1,5 @@
+import {EvaluatedScript, FetchedScript, PreparedScript} from "./types";
+
 const DISCORD_DOMAIN = "discord.com";
 const DISCORD_APP_PATH = "/app";
 
@@ -40,10 +42,6 @@ function findScripts(discordPageHTMLCode: string) {
         x.slice(0, x.indexOf("\"")));
     return allScriptsUrls;
 }
-
-type FetchedScript = { path: string, responseAsText: string };
-type PreparedScript = { path: string, readySourceCode: string };
-type EvaluatedScript = { path: string, value: any };
 
 async function fetchScripts(scriptPathsArray: string[]) {
     const result = new Array<FetchedScript>();
