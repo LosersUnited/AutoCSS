@@ -14,11 +14,14 @@ const writeFileAsync = promisify(fs.writeFile);
         return null;
     }
 }*/
-
+type EvaluatedScript = { path: string, value: any };
 // thankies shady. regex go brerrr
 const REPLACEMENT_REGEX = /(\[["']\w+.+?]).(\w+)/g;
 
-function replaceClassNamesByRegex(cssString: string, jsonFile: { [key: string]: string }[]): string {
+function replaceClassNamesByRegex(cssString: string, jsonFile: {
+    find(predicate: (element: any) => boolean): (any);
+    evaluatedScripts: EvaluatedScript[]
+}): string {
     return cssString.replace(REPLACEMENT_REGEX, (match, group1, group2) => {
         const targetProps: string[] = JSON.parse(group1); // too lazy
         console.log(match, targetProps);
