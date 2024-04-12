@@ -24,16 +24,18 @@ pnpm i
 ```
 4. Execute with given file.
 ```javascript
- npx ts-node index.ts <fileName> (.css | optional)
+ // <REQUIRED> (OPTIONAL)
+ npx ts-node index.ts <fileName> (file extension)
 
- // Example: npx ts-node index.ts test
+ // Example: npx ts-node index.ts test (ext)
+ // Example: npx ts-node index.ts test.css (ext)
 
  // Our system will automatically apply .css 
  // The file needs to be in the same dir of the project
 ```
 
 # Template
-This is how the .css file should be structured for full functionality
+This is how the file should be structured for full functionality
 
 > [!IMPORTANT]
 > AutoCSS does NOT change how normal css works
@@ -110,6 +112,20 @@ Click on the `.js` file
 ![img.png](imgs/showExports.png)
 
 And there you go! There is your props to search for!
+
+Another way to also search for props is by searching using getModule.
+```javascript
+// Thanks Barnyard for a different solution.
+
+// BetterDiscord
+BdApi.Webpack.getModule((e) => e.avatar && e.avatar == "avatar__08316");
+
+// replugged
+replugged.webpack.getModule((e) => e?.exports?.avatar && e?.exports?.avatar == "avatar__08316")
+
+// Vencord
+// insert vencord example here. sorry ven ;3
+```
 
 For a example plugin my beloved made (Pastel Love)
 ```css
