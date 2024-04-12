@@ -20,10 +20,7 @@ const readdir = promisify(fs.readdir);
 // thankies shady. regex go brerrr
 const REPLACEMENT_REGEX = /(\[["']\w+.+?]).(\w+)/g;
 
-function replaceClassNamesByRegex(cssString: string, jsonFile: {
-    find(predicate: (element: any) => boolean): (any);
-    evaluatedScripts: EvaluatedScript[]
-}): string {
+function replaceClassNamesByRegex(cssString: string, jsonFile: { [p: string]: any }[]): string {
     return cssString.replace(REPLACEMENT_REGEX, (match, group1: string, group2) => {
         const modifiedGroup = group1.replace(/'/g, "\""); 
         // JSON.parse can't parse single quotes....?
