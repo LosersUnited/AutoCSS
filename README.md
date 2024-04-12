@@ -24,9 +24,11 @@ pnpm i
 ```
 4. Execute with given file.
 ```javascript
- npx ts-node index.ts <fileName> (.css | optional)
+ // <REQUIRED> (OPTIONAL)
+ npx ts-node index.ts <fileName> (file extension)
 
- // Example: npx ts-node index.ts test
+ // Example: npx ts-node index.ts test (ext)
+ // Example: npx ts-node index.ts test.css (ext)
 
  // Our system will automatically apply .css 
  // The file needs to be in the same dir of the project

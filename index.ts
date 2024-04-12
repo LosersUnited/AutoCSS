@@ -30,7 +30,7 @@ function replaceClassNamesByRegex(cssString: string, jsonFile: { [key: string]: 
     });
 }
 
-async function startConverting(inputFilePath: string): Promise<void> {
+async function startConverting(inputFilePath: string, optionalFilePath: string): Promise<void> {
     const outputFolder = 'build';
     const fileName = path.basename(inputFilePath, path.extname(inputFilePath));
     const outputPath = path.join(outputFolder, fileName);
@@ -49,7 +49,10 @@ async function startConverting(inputFilePath: string): Promise<void> {
         const jsonFile = await fetcher.fetchFullDiscordCSSDefinitions();
         const updatedCSS = replaceClassNamesByRegex(cssString, jsonFile);
 
-        await writeFileAsync(outputPath + ".css", updatedCSS);
+        // you're welcome salty boi ;3
+        const fileExtension = optionalFilePath && optionalFilePath.startsWith('.') ? optionalFilePath : `.${optionalFilePath || 'css'}`;
+
+        await writeFileAsync(outputPath + fileExtension, updatedCSS);
 
         console.log(`Updated CSS has been written to ${outputPath}`);
     } catch (err) {
@@ -57,18 +60,17 @@ async function startConverting(inputFilePath: string): Promise<void> {
     }
 }
 
+
 const args: string[] = process.argv.slice(2);
-if (args.length !== 1) {
-    console.error('Usage:\n\tnpx ts-node index.ts <file>');
-    process.exit(1);
-}
 
 let inputPath: string = args[0];
+console.log(args)
 if (inputPath) {
     let resolvedPath: string = path.resolve(inputPath);
+    let optionalFilePath = args[1];
     if (!fs.existsSync(resolvedPath)) {
         inputPath += '.css'; // we can try if the user doesn't wanna add .css or forgets to.
         resolvedPath = path.resolve(inputPath);
     }
-    startConverting(resolvedPath);
+    startConverting(resolvedPath, optionalFilePath);
 }
