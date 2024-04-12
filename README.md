@@ -113,6 +113,20 @@ Click on the `.js` file
 
 And there you go! There is your props to search for!
 
+Another way to also search for props is by searching using getModule.
+```javascript
+// Thanks Barnyard for a different solution.
+
+// BetterDiscord
+BdApi.Webpack.getModule((e) => e.avatar && e.avatar == "avatar__08316");
+
+// replugged
+replugged.webpack.getModule((e) => e?.exports?.avatar && e?.exports?.avatar == "avatar__08316")
+
+// Vencord
+// insert vencord example here. sorry ven ;3
+```
+
 For a example plugin my beloved made (Pastel Love)
 ```css
 :root {

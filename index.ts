@@ -22,8 +22,9 @@ function replaceClassNamesByRegex(cssString: string, jsonFile: {
     find(predicate: (element: any) => boolean): (any);
     evaluatedScripts: EvaluatedScript[]
 }): string {
-    return cssString.replace(REPLACEMENT_REGEX, (match, group1, group2) => {
-        const targetProps: string[] = JSON.parse(group1); // too lazy
+    return cssString.replace(REPLACEMENT_REGEX, (match, group1: string, group2) => {
+        const modifiedGroup = group1.replace(/'/g, "\"");
+        const targetProps: string[] = JSON.parse(modifiedGroup);
         console.log(match, targetProps);
         const targetClassName = jsonFile.find(x => targetProps.every(key => x && x.hasOwnProperty(key)));
         if (targetClassName) {
