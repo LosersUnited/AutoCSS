@@ -5,3 +5,5 @@
 .["buttons"].buttons {background-color: azure}
 
 .["emojiContainer","emojiContainerClickable"].emojiContainer { color: #000; }
+
+.["emojiContainer","!footer", "!emojiContainerClickable"].emojiContainer { color: #000; }
