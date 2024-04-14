@@ -20,12 +20,15 @@ const readdir = promisify(fs.readdir);
 // thankies shady. regex go brerrr
 const REPLACEMENT_REGEX = /(\[["']\w+.+?]).(\w+)/g;
 
-function replaceClassNamesByRegex(cssString: string, jsonFile: { [p: string]: any }[]): string {
+function replaceClassNamesByRegex(cssString: string, jsonFile: { [key: string]: string }[]): string {
     return cssString.replace(REPLACEMENT_REGEX, (match, group1: string, group2) => {
         const modifiedGroup = group1.replace(/'/g, "\""); 
         // JSON.parse can't parse single quotes....?
-        const targetProps: string[] = JSON.parse(modifiedGroup);
-        const targetClassName = jsonFile.find(x => targetProps.every(key => x && x.hasOwnProperty(key)));
+        const rawProps: string[] = JSON.parse(modifiedGroup); // too lazy
+        const toExcludeProps: string[] = [];
+        const targetProps = rawProps.filter(x => x.startsWith("!") ? toExcludeProps.push(x) && false : true);
+        console.log(match, targetProps);
+        const targetClassName = jsonFile.find(x => targetProps.every(key => x && x.hasOwnProperty(key)) && !toExcludeProps.some(key => x && x.hasOwnProperty(key.slice(1))));
         if (targetClassName) {
             return targetClassName[group2].replace(' ','.');
         }

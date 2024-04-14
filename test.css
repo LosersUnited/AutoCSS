@@ -1,7 +1,10 @@
-﻿.["splashImageHeight"].splashImageHeight {display: none}
+.["splashImageHeight"].splashImageHeight {display: none}
 
 .["sizeLarge"].sizeLarge {display: none}
               
 .["buttons"].buttons {background-color: azure}
 
 .["barBase"].newMessagesBar { color: #000; }
+.["emojiContainer","emojiContainerClickable"].emojiContainer { color: #000; }
+
+.["emojiContainer","!footer", "!emojiContainerClickable"].emojiContainer { color: #000; }
