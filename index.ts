@@ -2,7 +2,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { promisify } from 'util';
-import {EvaluatedScript} from "./assets/types";
+import { EvaluatedScript } from "./assets/types";
+import { pickRandomProperties, replaceAsync } from './assets/utils';
 const writeFileAsync = promisify(fs.writeFile);
 const readdir = promisify(fs.readdir);
 
@@ -19,10 +20,11 @@ const readdir = promisify(fs.readdir);
 
 // thankies shady. regex go brerrr
 const REPLACEMENT_REGEX = /(\[["']\w+.+?]).(\w+)/g;
+const REPLACEMENT_REGEX2 = /\.([a-zA-Z]+\_\_?[a-zA-Z0-9_.-]+)\s\{/g;
 
 function replaceClassNamesByRegex(cssString: string, jsonFile: { [key: string]: string }[]): string {
     return cssString.replace(REPLACEMENT_REGEX, (match, group1: string, group2) => {
-        const modifiedGroup = group1.replace(/'/g, "\""); 
+        const modifiedGroup = group1.replace(/'/g, "\"");
         // JSON.parse can't parse single quotes....?
         const rawProps: string[] = JSON.parse(modifiedGroup); // too lazy
         const toExcludeProps: string[] = [];
@@ -30,9 +32,34 @@ function replaceClassNamesByRegex(cssString: string, jsonFile: { [key: string]: 
         console.log(match, targetProps);
         const targetClassName = jsonFile.find(x => targetProps.every(key => x && x.hasOwnProperty(key)) && !toExcludeProps.some(key => x && x.hasOwnProperty(key.slice(1))));
         if (targetClassName) {
-            return targetClassName[group2].replace(' ','.');
+            return targetClassName[group2].replace(' ', '.');
         }
         return match;
+    });
+}
+
+function reverseLookup(realClassName: string, cssDefs: { [key: string]: string }[]) {
+    let targetModuleId: string | null = null;
+    const targetModule = cssDefs.find(x => {
+        if (x.hasOwnProperty(realClassName)) {
+            targetModuleId = x.module;
+            return true;
+        }
+        return false;
+    });
+    if (!targetModule)
+        throw new Error(`Reverse lookup for ${realClassName} failed.`);
+    const targetProp = Object.keys(targetModule).find(x => targetModule[x] == realClassName);
+    return { recipe: fetcher.conflictSolver(targetModule, targetProp!, targetModuleId!), targetProp };
+}
+
+async function replaceClassNamesByRegexInReverse(cssString: string, cssDefs: { [key: string]: string }[]) {
+    return await replaceAsync(cssString, REPLACEMENT_REGEX2, async (match, group1: string) => {
+        const modifiedGroup = group1.replace('.', ' ');
+        const output = reverseLookup(modifiedGroup, cssDefs);
+        if (output == null)
+            return match;
+        return `.${JSON.stringify(await output.recipe)}.${output.targetProp} {`;
     });
 }
 
@@ -66,8 +93,33 @@ async function startConverting(inputFilePath: string, optionalFilePath: string):
     }
 }
 
+async function startReverseConverting(inputFilePath: string): Promise<void> {
+    const fileName = path.basename(inputFilePath, path.extname(inputFilePath)) + ".raw";
+    const outputPath = path.join("./", fileName);
+
+    try {
+        if (!fs.existsSync(inputFilePath)) {
+            fs.writeFileSync(inputFilePath, '');
+        }
+
+        const cssString = await fs.promises.readFile(inputFilePath, 'utf8');
+        const cssDefs = await fetcher.fetchFullDiscordCSSDefinitions(true);
+        const updatedCSS = await replaceClassNamesByRegexInReverse(cssString, cssDefs);
+        const fileExtension = ".css";
+
+        await writeFileAsync(outputPath + fileExtension, updatedCSS);
+
+        console.log(`Updated CSS has been written to ${outputPath}`);
+    } catch (err) {
+        console.error('Error:', err);
+    }
+}
+
 
 const args: string[] = process.argv.slice(2);
+const mode = args.includes("--reverse") ? 1 : 0;
+if (mode != 0)
+    args.shift();
 if (args.includes("--help") || args.length == 0) {
     console.error('Usage:\n\tnpx ts-node index.ts <file or directory>');
     process.exit(1);
@@ -85,6 +137,9 @@ async function getFiles(dir: string): Promise<string[]> {
 let inputPath: string = args[0];
 console.log(args)
 if (inputPath) {
+    /*     reverseLookup("emojiContainer__07d67").then(out => console.log(out));
+        // @ts-ignore
+        return; */
     let resolvedPath: string = path.resolve(inputPath);
     let optionalFilePath = args[1];
     if (!fs.existsSync(resolvedPath)) {
@@ -96,10 +151,15 @@ if (inputPath) {
             const paths = await getFiles(resolvedPath);
             for (let index = 0; index < paths.length; index++) {
                 const element = paths[index];
-                startConverting(element, optionalFilePath);
+                if (mode == 0)
+                    startConverting(element, optionalFilePath);
+                else if (mode == 1)
+                    startReverseConverting(element);
             }
         })();
     }
-    else
+    else if (mode == 0)
         startConverting(resolvedPath, optionalFilePath);
+    else if (mode == 1)
+        startReverseConverting(resolvedPath);
 }

@@ -1,4 +1,4 @@
-import {EvaluatedScript, FetchedScript, PreparedScript} from "./types";
+import { EvaluatedScript, FetchedScript, PreparedScript } from "./types";
 
 const DISCORD_DOMAIN = "discord.com";
 const DISCORD_APP_PATH = "/app";
@@ -17,10 +17,12 @@ const TEXT_CONSTANTS = {
     scriptEnd: "</script>",
 };
 
-const MODULE_MATCHER_REGEX = (propName: string) => `({|,)(${propName}):`;
+const MODULE_VALUE_MATCHER_REGEX = (propName: string) => `({|,)(${propName}):`;
+const MODULE_PROP_MATCHER_REGEX = (propName: string) => `({|,)(\\w+):"(${propName})"`;
 
 const USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.3";
 import * as utils from "./utils";
+import solver from "./conflictSolver";
 
 function fetchDiscordPage() {
     return fetch(`https://${DISCORD_DOMAIN}${DISCORD_APP_PATH}`, {
@@ -99,7 +101,7 @@ function evaluateScripts(convertedScripts: PreparedScript[]) {
 
 const cachedScripts: EvaluatedScript[] = [];
 
-export async function fetchFullDiscordCSSDefinitions() {
+export async function fetchFullDiscordCSSDefinitions(reverseMode = false) {
     if (cachedScripts.length == 0) {
         const response = await fetchDiscordPage();
         const responseAsText = await response.text();
@@ -177,7 +179,7 @@ export async function fetchFullDiscordCSSDefinitions() {
     const cache: { [key: string]: any } = {};
     const result = {
         evaluatedScripts,
-        find(predicate: (element: any) => boolean) {
+        filter(predicate: (element: any) => boolean, thisArg?: any, first: boolean = false) {
             for (let index = 0; index < evaluatedScripts.length; index++) {
                 const evaluatedScript = evaluatedScripts[index];
                 const modules = Object.keys(evaluatedScript.value);
@@ -186,7 +188,7 @@ export async function fetchFullDiscordCSSDefinitions() {
                     const fakeObject = {
                         module: "",
                         hasOwnProperty(prop: string) { // and this is, kids, why you don't do something.hasOwnProperty() but Object.prototype.hasOwnProperty.call(something)
-                            const regex = new RegExp(MODULE_MATCHER_REGEX(prop), "g");
+                            const regex = new RegExp(reverseMode ? MODULE_PROP_MATCHER_REGEX(prop) : MODULE_VALUE_MATCHER_REGEX(prop), "g");
                             if (regex.test(evaluatedScript.value[x].toString())) {
                                 this.module = x;
                                 return true;
@@ -197,36 +199,50 @@ export async function fetchFullDiscordCSSDefinitions() {
                     fakeArray.push(fakeObject);
                 });
                 // const foundOrNot = modules.filter(x=>evaluatedScript.value[x].toString().includes())
-                const foundOrNot = fakeArray.find(predicate);
+                const foundOrNot = fakeArray.filter(predicate);
                 fakeArray.length = 0;
-                if (foundOrNot) {
-                    const fakeRequire = (id: string) => {
-                        const fakeWebpack2 = { exports: undefined as unknown as { [key: string]: string } };
-                        // console.log(id);
-                        if (cache[id] == undefined) {
-                            if (evaluatedScript.value[id] == undefined) {
-                                evaluatedScripts.find(x => x.value[id])?.value[id](fakeWebpack2, undefined, fakeRequire);
+                if (foundOrNot.length > 0) {
+                    const evenMoreFinalResult = [];
+                    for (let index2 = 0; index2 < foundOrNot.length; index2++) {
+                        const fakeRequire = (id: string) => {
+                            const fakeWebpack2 = { exports: undefined as unknown as { [key: string]: string } };
+                            // console.log(id);
+                            if (cache[id] == undefined) {
+                                if (evaluatedScript.value[id] == undefined) {
+                                    evaluatedScripts.find(x => x.value[id])?.value[id](fakeWebpack2, undefined, fakeRequire);
+                                    cache[id] = fakeWebpack2.exports;
+                                    return cache[id];
+                                }
+                                evaluatedScript.value[id](fakeWebpack2, undefined, fakeRequire);
                                 cache[id] = fakeWebpack2.exports;
-                                return cache[id];
                             }
-                            evaluatedScript.value[id](fakeWebpack2, undefined, fakeRequire);
-                            cache[id] = fakeWebpack2.exports;
-                        }
-                        return cache[id] ?? fakeWebpack2.exports;
-                    };
+                            return cache[id] ?? fakeWebpack2.exports;
+                        };
 
-                    const foundModule = foundOrNot.module;
-                    if (cache[foundModule] == undefined) {
-                        const builder = evaluatedScript.value[foundModule];
-                        const fakeWebpack = { exports: undefined as unknown as { [key: string]: string } };
-                        builder(fakeWebpack, undefined, fakeRequire);
-                        cache[foundModule] = fakeWebpack.exports;
+                        const foundModule = foundOrNot[index2].module;
+                        if (cache[foundModule] == undefined) {
+                            const builder = evaluatedScript.value[foundModule];
+                            const fakeWebpack = { exports: undefined as unknown as { [key: string]: string } };
+                            builder(fakeWebpack, undefined, fakeRequire);
+                            cache[foundModule] = fakeWebpack.exports;
+                        }
+                        if (first)
+                            return cache[foundModule];
+                        evenMoreFinalResult.push(cache[foundModule]);
                     }
-                    return cache[foundModule];
+                    return evenMoreFinalResult;
                 }
             }
             return undefined;
         },
+        get find() {
+            return (...args: any[]) => this.filter(args[0], args[1], true);
+        }
     };
     return result as unknown as { [key: string]: any }[];
+}
+
+export function conflictSolver(targetModule: { [key: string]: any }, targetProp: string, targetModuleId: string) {
+    console.log("Running conflict solver. This task will take a while.");
+    return solver(targetModule, targetProp, targetModuleId);
 }

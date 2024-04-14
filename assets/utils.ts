@@ -18,5 +18,29 @@ export function getTextBetween(text: string, start: string, end: string) {
     return results;
 }
 export const delay = (milliseconds: number) => new Promise<void>((resolve, reject) => {
-	setTimeout(_ => resolve(), milliseconds);
+    setTimeout((_: any) => resolve(), milliseconds);
 });
+export function pickRandomProperties(obj: any, n: number) {
+    const keys = Object.keys(obj);
+    const randomKeys: string[] = [];
+    if (n >= keys.length) {
+        return keys.map(key => obj[key]);
+    }
+
+    while (randomKeys.length < n) {
+        const randomKey = keys[Math.floor(Math.random() * keys.length)];
+        if (!randomKeys.includes(randomKey)) {
+            randomKeys.push(randomKey);
+        }
+    }
+    return randomKeys;
+}
+export async function replaceAsync(str: string, regex: any, asyncFn: (...args: any[]) => any) {
+    const promises: any[] = [];
+    str.replace(regex, (full, ...args) => {
+        promises.push(asyncFn(full, ...args));
+        return full;
+    });
+    const data = await Promise.all(promises);
+    return str.replace(regex, () => data.shift());
+}
