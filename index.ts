@@ -30,7 +30,7 @@ function replaceClassNamesByRegex(cssString: string, jsonFile: { [key: string]: 
         console.log(match, targetProps);
         const targetClassName = jsonFile.find(x => targetProps.every(key => x && x.hasOwnProperty(key)) && !toExcludeProps.some(key => x && x.hasOwnProperty(key.slice(1))));
         if (targetClassName) {
-            return targetClassName[group2];
+            return targetClassName[group2].replace(' ','.');
         }
         return match;
     });
