@@ -44,3 +44,14 @@ export async function replaceAsync(str: string, regex: any, asyncFn: (...args: a
     const data = await Promise.all(promises);
     return str.replace(regex, () => data.shift());
 }
+export function getDeferred() {
+    let resolve: undefined | ((arg: any) => void) = undefined;
+    let reject: undefined | ((e?: Error) => void) = undefined;
+
+    const promise = new Promise((resolveCb, rejectCb) => {
+        resolve = resolveCb;
+        reject = rejectCb;
+    });
+
+    return { resolve, reject, promise };
+}
