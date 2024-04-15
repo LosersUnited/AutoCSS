@@ -93,9 +93,15 @@ async function startConverting(inputFilePath: string, optionalFilePath: string):
     }
 }
 
-async function startReverseConverting(inputFilePath: string): Promise<void> {
+async function startReverseConverting(inputFilePath: string, basePath: string): Promise<void> {
     const fileName = path.basename(inputFilePath, path.extname(inputFilePath)) + ".raw";
-    const outputPath = path.join("./", fileName);
+    const inputParsed = path.relative(basePath, path.parse(inputFilePath).dir);
+    console.log(inputParsed);
+    const outputFolder = 'reverse-build/' + inputParsed;
+    if (!fs.existsSync(outputFolder)) {
+        fs.mkdirSync(outputFolder, { recursive: true });
+    }
+    const outputPath = path.join(outputFolder, fileName);
     try {
         if (!fs.existsSync(inputFilePath)) {
             fs.writeFileSync(inputFilePath, '');
@@ -153,12 +159,12 @@ if (inputPath) {
                 if (mode == 0)
                     startConverting(element, optionalFilePath);
                 else if (mode == 1)
-                    startReverseConverting(element);
+                    startReverseConverting(element, resolvedPath);
             }
         })();
     }
     else if (mode == 0)
         startConverting(resolvedPath, optionalFilePath);
     else if (mode == 1)
-        startReverseConverting(resolvedPath);
+        startReverseConverting(resolvedPath, path.resolve("./"));
 }
