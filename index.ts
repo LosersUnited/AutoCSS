@@ -20,7 +20,7 @@ const readdir = promisify(fs.readdir);
 
 // thankies shady. regex go brerrr
 const REPLACEMENT_REGEX = /(\[["']\w+.+?]).(\w+)/g;
-const REPLACEMENT_REGEX2 = /\.([a-zA-Z]+\_\_?[a-zA-Z0-9_.-]+)\s\{/g;
+const REPLACEMENT_REGEX2 = /\.([a-zA-Z]+\_\_?[a-zA-Z0-9_.-]+)\s?\{/g;
 
 function replaceClassNamesByRegex(cssString: string, jsonFile: { [key: string]: string }[]): string {
     return cssString.replace(REPLACEMENT_REGEX, (match, group1: string, group2) => {
@@ -96,7 +96,6 @@ async function startConverting(inputFilePath: string, optionalFilePath: string):
 async function startReverseConverting(inputFilePath: string): Promise<void> {
     const fileName = path.basename(inputFilePath, path.extname(inputFilePath)) + ".raw";
     const outputPath = path.join("./", fileName);
-
     try {
         if (!fs.existsSync(inputFilePath)) {
             fs.writeFileSync(inputFilePath, '');
