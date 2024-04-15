@@ -252,7 +252,7 @@ export async function fetchFullDiscordCSSDefinitions(reverseMode = false) {
                     return evenMoreFinalResult;
                 }
             }
-            return undefined;
+            return first ? undefined : [];
         },
         get find() {
             return (...args: any[]) => this.filter(args[0], args[1], true);
