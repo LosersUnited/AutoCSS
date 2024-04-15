@@ -20,3 +20,14 @@ export function getTextBetween(text: string, start: string, end: string) {
 export const delay = (milliseconds: number) => new Promise<void>((resolve, reject) => {
 	setTimeout(_ => resolve(), milliseconds);
 });
+export function getDeferred() {
+    let resolve: undefined | ((arg: any) => void) = undefined;
+    let reject: undefined | ((e?: Error) => void) = undefined;
+
+    const promise = new Promise((resolveCb, rejectCb) => {
+        resolve = resolveCb;
+        reject = rejectCb;
+    });
+
+    return { resolve, reject, promise };
+}

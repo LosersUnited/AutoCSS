@@ -31,6 +31,7 @@ function fetchDiscordPage() {
 }
 
 function findScripts(discordPageHTMLCode: string) {
+    console.log("Fetching scripts...");
     if (!discordPageHTMLCode.includes(DISCORD_CONSTANTS.globalEnvStart))
         throw new Error("Invalid input.");
     const allScriptsRaw: string[] = utils.getTextBetween(
@@ -48,6 +49,7 @@ async function fetchScripts(scriptPathsArray: string[]) {
     for (let index = 0; index < scriptPathsArray.length; index++) {
         const currentScriptPath = scriptPathsArray[index];
         const response = await fetch(`https://${DISCORD_DOMAIN}/${currentScriptPath}`);
+        console.log("Fetching script...", currentScriptPath);
         const responseAsText = await response.text();
         result.push({
             path: currentScriptPath,
@@ -98,9 +100,24 @@ function evaluateScripts(convertedScripts: PreparedScript[]) {
 }
 
 const cachedScripts: EvaluatedScript[] = [];
+const lock = {
+    locked: false,
+    promise: { promise: Promise.resolve() } as unknown as {
+        resolve: () => void;
+        reject: () => void;
+        promise: Promise<void>;
+    },
+}
 
 export async function fetchFullDiscordCSSDefinitions() {
-    if (cachedScripts.length == 0) {
+    await lock.promise.promise;
+    if (cachedScripts.length == 0 && lock.locked == false) {
+        lock.locked = true;
+        lock.promise = utils.getDeferred() as unknown as {
+            resolve: () => void;
+            reject: () => void;
+            promise: Promise<void>;
+        };
         const response = await fetchDiscordPage();
         const responseAsText = await response.text();
         const foundScripts = findScripts(responseAsText);
@@ -108,6 +125,8 @@ export async function fetchFullDiscordCSSDefinitions() {
         const foundCSSModulesScripts = findCSSModulesScripts(fetchedScripts);
         const convertedScripts = convertScriptSourceCode(foundCSSModulesScripts);
         cachedScripts.push(...evaluateScripts(convertedScripts));
+        lock.locked = false;
+        lock.promise.resolve();
     }
     const evaluatedScripts = [...cachedScripts];
     /*
