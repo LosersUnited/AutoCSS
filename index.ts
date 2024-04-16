@@ -20,7 +20,7 @@ const readdir = promisify(fs.readdir);
 
 // thankies shady. regex go brerrr
 const REPLACEMENT_REGEX = /(\[["']\w+.+?]).(\w+)/g;
-const REPLACEMENT_REGEX2 = /\.([a-zA-Z]+\_\_?[a-zA-Z0-9_.-]+)\s?\{/g;
+const REPLACEMENT_REGEX2 = /\.([a-zA-Z]+\_\_?[a-zA-Z0-9_.-]+)/g;
 
 function replaceClassNamesByRegex(cssString: string, jsonFile: { [key: string]: string }[]): string {
     return cssString.replace(REPLACEMENT_REGEX, (match, group1: string, group2) => {
@@ -48,7 +48,8 @@ function reverseLookup(realClassName: string, cssDefs: { [key: string]: string }
         return false;
     });
     if (!targetModule)
-        throw new Error(`Reverse lookup for ${realClassName} failed.`);
+        // throw new Error(`Reverse lookup for ${realClassName} failed.`);
+        return null;
     const targetProp = Object.keys(targetModule).find(x => targetModule[x] == realClassName);
     return { recipe: fetcher.conflictSolver(targetModule, targetProp!, targetModuleId!), targetProp };
 }
@@ -59,7 +60,7 @@ async function replaceClassNamesByRegexInReverse(cssString: string, cssDefs: { [
         const output = reverseLookup(modifiedGroup, cssDefs);
         if (output == null)
             return match;
-        return `.${JSON.stringify(await output.recipe)}.${output.targetProp} {`;
+        return `.${JSON.stringify(await output.recipe)}.${output.targetProp}`;
     });
 }
 
