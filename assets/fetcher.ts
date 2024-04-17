@@ -111,7 +111,7 @@ const lock = {
     },
 }
 
-export async function fetchFullDiscordCSSDefinitions(reverseMode = false) {
+export async function fetchFullDiscordCSSDefinitions(reverseMode = false, enableRegexp = false) {
     await lock.promise.promise;
     if (cachedScripts.length == 0 && lock.locked == false) {
         lock.locked = true;
@@ -202,12 +202,12 @@ export async function fetchFullDiscordCSSDefinitions(reverseMode = false) {
             for (let index = 0; index < evaluatedScripts.length; index++) {
                 const evaluatedScript = evaluatedScripts[index];
                 const modules = Object.keys(evaluatedScript.value);
-                const fakeArray: { module: string; hasOwnProperty(prop: string): boolean; }[] = [];
+                const fakeArray: { module: string; hasOwnProperty(prop: string, customRegex: RegExp): boolean; }[] = [];
                 modules.forEach((x) => {
                     const fakeObject = {
                         module: "",
-                        hasOwnProperty(prop: string) { // and this is, kids, why you don't do something.hasOwnProperty() but Object.prototype.hasOwnProperty.call(something)
-                            const regex = new RegExp(reverseMode ? MODULE_PROP_MATCHER_REGEX(prop) : MODULE_VALUE_MATCHER_REGEX(prop), "g");
+                        hasOwnProperty(prop: string, customRegex?: RegExp) { // and this is, kids, why you don't do something.hasOwnProperty() but Object.prototype.hasOwnProperty.call(something)
+                            const regex = enableRegexp && customRegex != undefined ? customRegex : new RegExp(reverseMode ? MODULE_PROP_MATCHER_REGEX(prop) : MODULE_VALUE_MATCHER_REGEX(prop), "g");
                             if (regex.test(evaluatedScript.value[x].toString())) {
                                 this.module = x;
                                 return true;

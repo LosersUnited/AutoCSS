@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { promisify } from 'util';
 import { EvaluatedScript } from "./assets/types";
-import { pickRandomProperties, replaceAsync } from './assets/utils';
+import { escapeRegExp, pickRandomProperties, replaceAsync } from './assets/utils';
 const writeFileAsync = promisify(fs.writeFile);
 const readdir = promisify(fs.readdir);
 
@@ -38,10 +38,16 @@ function replaceClassNamesByRegex(cssString: string, jsonFile: { [key: string]: 
     });
 }
 
-function reverseLookup(realClassName: string, cssDefs: { [key: string]: string }[]) {
+const prepareMatcherRegexForReverseLookup = (realClassName: string) => `(${escapeRegExp(realClassName)}(\\s?\\w+)\\4?)`;
+
+function reverseLookup(realClassName: string, cssDefs: { [key: string]: string }[], matcherRegex = new RegExp(`({|,)(\\w+):"${prepareMatcherRegexForReverseLookup(realClassName)}"`, "g")) {
     let targetModuleId: string | null = null;
     const targetModule = cssDefs.find(x => {
-        if (x.hasOwnProperty(realClassName)) {
+        if (
+            x.hasOwnProperty(realClassName) ||
+            // @ts-expect-error
+            x.hasOwnProperty(realClassName, matcherRegex)
+        ) {
             targetModuleId = x.module;
             return true;
         }
@@ -50,17 +56,38 @@ function reverseLookup(realClassName: string, cssDefs: { [key: string]: string }
     if (!targetModule)
         // throw new Error(`Reverse lookup for ${realClassName} failed.`);
         return null;
-    const targetProp = Object.keys(targetModule).find(x => targetModule[x] == realClassName);
+    const targetProp = Object.keys(targetModule).find(x => targetModule[x] == realClassName || new RegExp(prepareMatcherRegexForReverseLookup(realClassName)).test(targetModule[x]));
     return { recipe: fetcher.conflictSolver(targetModule, targetProp!, targetModuleId!), targetProp };
 }
 
 async function replaceClassNamesByRegexInReverse(cssString: string, cssDefs: { [key: string]: string }[]) {
     return await replaceAsync(cssString, REPLACEMENT_REGEX2, async (match, group1: string) => {
+        // const modifiedGroup = group1.replace('.', ' ');
+        // const output = reverseLookup(modifiedGroup, cssDefs);
+        // if (output == null)
+        //     return match;
+        // return `.${JSON.stringify(await output.recipe)}.${output.targetProp}`;
         const modifiedGroup = group1.replace('.', ' ');
+        const splitBySpaces = modifiedGroup.split(" ");
         const output = reverseLookup(modifiedGroup, cssDefs);
-        if (output == null)
-            return match;
-        return `.${JSON.stringify(await output.recipe)}.${output.targetProp}`;
+        if (splitBySpaces.length < 2) {
+            if (output == null) {
+                return match;
+            }
+            return `.${JSON.stringify(await output.recipe)}.${output.targetProp}`;
+        }
+        if (output != null)
+            return `.${JSON.stringify(await output.recipe)}.${output.targetProp}`;
+        let result = "";
+        for (let index = 0; index < splitBySpaces.length; index++) {
+            const element = splitBySpaces[index];
+            console.log(element);
+            const outputLocal = reverseLookup(element, cssDefs);
+            if (outputLocal != null) {
+                result += `.${JSON.stringify(await outputLocal.recipe)}.${outputLocal.targetProp}`
+            }
+        }
+        return result;
     });
 }
 
@@ -109,7 +136,7 @@ async function startReverseConverting(inputFilePath: string, basePath: string): 
         }
 
         const cssString = await fs.promises.readFile(inputFilePath, 'utf8');
-        const cssDefs = await fetcher.fetchFullDiscordCSSDefinitions(true);
+        const cssDefs = await fetcher.fetchFullDiscordCSSDefinitions(true, true);
         const updatedCSS = await replaceClassNamesByRegexInReverse(cssString, cssDefs);
         const fileExtension = ".css";
 
