@@ -154,8 +154,9 @@ async function startReverseConverting(inputFilePath: string, basePath: string): 
 const args: string[] = process.argv.slice(2);
 console.log(args)
 const mode = args.includes("--reverse") ? 1 : 0;
-// if (mode != 0)
-    // args.shift(); // what the heck were you doing here ??
+if (mode != 0)
+    args.shift(); // what the heck were you doing here ??
+    // okay cool linux user
 if (args.includes("--help") || args.length == 0) {
     console.error('Usage:\n\tnpx ts-node index.ts <file or directory>');
     process.exit(1);

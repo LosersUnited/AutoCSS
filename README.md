@@ -30,7 +30,7 @@ pnpm i
  // Example: npx ts-node index.ts test (ext)
  // Example: npx ts-node index.ts test.css (ext)
 
- // Example Reverse: npx ts-node index.ts test.css (ext) --reverse
+ // Example Reverse: npx ts-node index.ts --reverse test.css (ext)
  // Reverse is the action of taking a theme and turning it into our format with correct props
 
  // Our system will automatically apply .css 
