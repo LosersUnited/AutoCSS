@@ -30,9 +30,17 @@ pnpm i
  // Example: npx ts-node index.ts test (ext)
  // Example: npx ts-node index.ts test.css (ext)
 
+ // Example Reverse: npx ts-node index.ts --reverse test.css (ext)
+ // Reverse is the action of taking a theme and turning it into our format with correct props
+
  // Our system will automatically apply .css 
  // The file needs to be in the same dir of the project
 ```
+
+# Why use this?
+This project was born out of a determination to find a smoother path for theme developers. Instead of constantly chasing Discord's updates and renaming classes, I set out to discover the most efficient solution. 
+
+Enter the .['sizeLarge'] format: a simple yet powerful method that slashes the time and effort needed to locate specific class names. It's the result of dedicated tinkering and a commitment to making life easier for developers.
 
 # Template
 This is how the file should be structured for full functionality
