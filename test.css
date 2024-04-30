@@ -8,3 +8,5 @@
 .["emojiContainer","emojiContainerClickable"].emojiContainer { color: #000; }
 
 .["emojiContainer","!footer", "!emojiContainerClickable"].emojiContainer { color: #000; }
+
+.["scrollerBase"][0].scrollerBase 
