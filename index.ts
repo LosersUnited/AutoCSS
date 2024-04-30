@@ -19,17 +19,29 @@ const readdir = promisify(fs.readdir);
 }*/
 
 // thankies shady. regex go brerrr
-const REPLACEMENT_REGEX = /(\[["']\w+.+?]).(\w+)/g;
+const REPLACEMENT_REGEX = /(\[["']\w+.+?])(\[\d\])?.(\w+)/g;
 const REPLACEMENT_REGEX2 = /\.([a-zA-Z]+\_\_?[a-zA-Z0-9_.-]+)/g;
 
 function replaceClassNamesByRegex(cssString: string, jsonFile: { [key: string]: string }[]): string {
-    return cssString.replace(REPLACEMENT_REGEX, (match, group1: string, group2) => {
+    return cssString.replace(REPLACEMENT_REGEX, (match, group1: string, index: string, group2) => {
         const modifiedGroup = group1.replace(/'/g, "\"");
         // JSON.parse can't parse single quotes....?
         const rawProps: string[] = JSON.parse(modifiedGroup); // too lazy
         const toExcludeProps: string[] = [];
         const targetProps = rawProps.filter(x => x.startsWith("!") ? toExcludeProps.push(x) && false : true);
         console.log(match, targetProps);
+        if (index != undefined) {
+            const availableClassNames = jsonFile.filter(x => targetProps.every(key => x && x.hasOwnProperty(key)) && !toExcludeProps.some(key => x && x.hasOwnProperty(key.slice(1))));
+            availableClassNames.sort((a, b) => {
+                const aValues = Object.values(a);
+                const bValues = Object.values(b);
+                return aValues.join().localeCompare(bValues.join());
+            });
+            if (availableClassNames.length > 0) {
+                return availableClassNames[JSON.parse(index)[0]][group2].replace(' ', '.');
+            }
+            return match;
+        }
         const targetClassName = jsonFile.find(x => targetProps.every(key => x && x.hasOwnProperty(key)) && !toExcludeProps.some(key => x && x.hasOwnProperty(key.slice(1))));
         if (targetClassName) {
             return targetClassName[group2].replace(' ', '.');
