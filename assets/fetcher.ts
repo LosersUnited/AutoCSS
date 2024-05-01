@@ -243,6 +243,9 @@ export async function fetchFullDiscordCSSDefinitions(reverseMode = false, enable
                         if (cache[foundModule] == undefined) {
                             const builder = evaluatedScript.value[foundModule];
                             const fakeWebpack = { exports: undefined as unknown as { [key: string]: string } };
+                            if (builder == undefined || typeof builder != "function") {
+                                console.log(foundOrNot[index2], builder, predicate.toString());
+                            }
                             builder(fakeWebpack, undefined, fakeRequire);
                             cache[foundModule] = fakeWebpack.exports;
                         }
