@@ -199,6 +199,7 @@ export async function fetchFullDiscordCSSDefinitions(reverseMode = false, enable
     const result = {
         evaluatedScripts,
         filter(predicate: (element: any) => boolean, thisArg?: any, first: boolean = false) {
+            const evenMoreFinalResult = [];
             for (let index = 0; index < evaluatedScripts.length; index++) {
                 const evaluatedScript = evaluatedScripts[index];
                 const modules = Object.keys(evaluatedScript.value);
@@ -221,7 +222,7 @@ export async function fetchFullDiscordCSSDefinitions(reverseMode = false, enable
                 const foundOrNot = fakeArray.filter(predicate);
                 fakeArray.length = 0;
                 if (foundOrNot.length > 0) {
-                    const evenMoreFinalResult = [];
+                    // const evenMoreFinalResult = [];
                     for (let index2 = 0; index2 < foundOrNot.length; index2++) {
                         const fakeRequire = (id: string) => {
                             const fakeWebpack2 = { exports: undefined as unknown as { [key: string]: string } };
@@ -249,10 +250,11 @@ export async function fetchFullDiscordCSSDefinitions(reverseMode = false, enable
                             return cache[foundModule];
                         evenMoreFinalResult.push(cache[foundModule]);
                     }
-                    return evenMoreFinalResult;
+                    // return evenMoreFinalResult;
+                    continue;
                 }
             }
-            return first ? undefined : [];
+            return first ? undefined : evenMoreFinalResult;
         },
         get find() {
             return (...args: any[]) => this.filter(args[0], args[1], true);
