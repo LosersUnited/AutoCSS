@@ -70,13 +70,23 @@ export default async function solver(targetModule: { [key: string]: any }, targe
         const targetAmountOfPropertiesToPick = ((targetModuleKeys.length % 2 == 0) ? targetModuleKeys.length : targetModuleKeys.length - 1);
         const randomProps = utils.pickRandomProperties(targetModule, targetAmountOfPropertiesToPick > 1 ? (targetAmountOfPropertiesToPick / 2) : targetAmountOfPropertiesToPick);
      */
-    for (let index = 0; index < Object.keys(stages).length; index++) {
+    const stageCount = Object.keys(stages).length;
+    // let lastResult: SolveResult | null = null;
+    for (let index = 0; index < stageCount; index++) {
         const currentStage = stages[index];
+        console.log("Now running stage", index + 1);
         const result = await currentStage(targetModule, targetProp, targetModuleId);
         if (result.isUnique == true) {
             return result.recipe;
         }
-        console.log("Next stage.", targetModule, targetProp);
+        // lastResult = result;
+        console.log("Next stage.", `Now ${index + 1}/${stageCount}`, targetModule, targetProp);
     }
+    console.log(targetModule, targetProp, targetModuleId);
+    /*     const proxy = await fetcher.fetchFullDiscordCSSDefinitions();
+        const res = proxy.filter(x => lastResult!.recipe.filter(x => !x.startsWith("!")).every(key => x && x.hasOwnProperty(key)) && !lastResult!.recipe.filter(x => x.startsWith("!")).some(key => x && x.hasOwnProperty(key.slice(1))))
+        console.log(res);
+        process.exit(1); */
+    // return null;
     return null;
 }
