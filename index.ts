@@ -50,7 +50,7 @@ function replaceClassNamesByRegex(cssString: string, jsonFile: { [key: string]: 
     });
 }
 
-const prepareMatcherRegexForReverseLookup = (realClassName: string, calculatedGroup: number) => `(${escapeRegExp(realClassName)}(\\s?\\w+)\\${calculatedGroup}?)`;
+const prepareMatcherRegexForReverseLookup = (realClassName: string, _calculatedGroup: number) => `(${escapeRegExp(realClassName)}(\\s?\\w+)*)`;
 
 function reverseLookup(realClassName: string, cssDefs: { [key: string]: string }[], matcherRegex = new RegExp(`({|,)(\\w+):"${prepareMatcherRegexForReverseLookup(realClassName, 4)}"`, "g")) {
     let targetModuleId: string | null = null;
