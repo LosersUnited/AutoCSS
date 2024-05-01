@@ -196,6 +196,7 @@ export async function fetchFullDiscordCSSDefinitions(reverseMode = false, enable
     }
     */
     const cache: { [key: string]: any } = {};
+    const cache2: { [key: string]: { propName: string, value: boolean } } = {};
     const result = {
         evaluatedScripts,
         filter(predicate: (element: any) => boolean, thisArg?: any, first: boolean = false) {
@@ -206,14 +207,27 @@ export async function fetchFullDiscordCSSDefinitions(reverseMode = false, enable
                 const fakeArray: { module: string; hasOwnProperty(prop: string, customRegex: RegExp): boolean; }[] = [];
                 modules.forEach((x) => {
                     const fakeObject = {
-                        module: "",
+                        module: x,
                         hasOwnProperty(prop: string, customRegex?: RegExp) { // and this is, kids, why you don't do something.hasOwnProperty() but Object.prototype.hasOwnProperty.call(something)
+                            if (cache2[this.module] && cache2[this.module].propName == prop)
+                                return cache2[this.module].value;
+                            // console.log(prop, new Error());
                             const regex = enableRegexp && customRegex != undefined ? customRegex : new RegExp(reverseMode ? MODULE_PROP_MATCHER_REGEX(prop) : MODULE_VALUE_MATCHER_REGEX(prop), "g");
                             if (regex.test(evaluatedScript.value[x].toString())) {
-                                this.module = x;
-                                return true;
+                                // console.log(regex);
+                                // console.log(evaluatedScript.value[x].toString());
+                                // console.log(evaluatedScript.value[x].toString().match(regex));
+                                if (!enableRegexp) {
+                                    cache2[this.module] = { propName: prop, value: true };
+                                    return cache2[this.module].value;
+                                }
+                                else return true;
                             }
-                            return false;
+                            if (!enableRegexp) {
+                                cache2[this.module] = { propName: prop, value: false };
+                                return cache2[this.module].value;
+                            }
+                            else return false;
                         }
                     };
                     fakeArray.push(fakeObject);
