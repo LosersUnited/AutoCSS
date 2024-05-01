@@ -54,6 +54,7 @@ const prepareMatcherRegexForReverseLookup = (realClassName: string, _calculatedG
 
 function reverseLookup(realClassName: string, cssDefs: { [key: string]: string }[], matcherRegex = new RegExp(`({|,)(\\w+):"${prepareMatcherRegexForReverseLookup(realClassName, 4)}"`, "g")) {
     let targetModuleId: string | null = null;
+    // console.log(matcherRegex, realClassName);
     const targetModule = cssDefs.find(x => {
         if (
             x.hasOwnProperty(realClassName) ||
@@ -70,8 +71,10 @@ function reverseLookup(realClassName: string, cssDefs: { [key: string]: string }
         // throw new Error(`Reverse lookup for ${realClassName} failed.`);
         return null;
     }
-    const targetProp = Object.keys(targetModule).find(x => targetModule[x] == realClassName || new RegExp(prepareMatcherRegexForReverseLookup(realClassName, 2), "g").test(targetModule[x]));
+    const targetProp = Object.keys(targetModule).find(x => targetModule[x] == realClassName || new RegExp("^" + prepareMatcherRegexForReverseLookup(realClassName, 2), "g").test(targetModule[x]));
+    console.log(targetModule);
     return { recipe: fetcher.conflictSolver(targetModule, targetProp!, targetModuleId!), targetProp };
+    // return { recipe: Promise.resolve([Object.keys(targetModule), undefined] as [string[], number | undefined]), targetProp };
 }
 
 async function replaceClassNamesByRegexInReverse(cssString: string, cssDefs: { [key: string]: string }[]) {
