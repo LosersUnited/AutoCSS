@@ -87,21 +87,30 @@ async function replaceClassNamesByRegexInReverse(cssString: string, cssDefs: { [
         const modifiedGroup = group1.replace(/\./g, ' ');
         const splitBySpaces = modifiedGroup.split(" ");
         const output = reverseLookup(modifiedGroup, cssDefs);
+        const weUseIndexOrNo =
+            (indexOrNo: number | undefined) =>
+                (indexOrNo == undefined ? "" : `[${indexOrNo}]`);
+        const cook =
+            async (out: { recipe: Promise<[string[], number | undefined] | null>; targetProp: string | undefined; }) =>
+                `.${JSON.stringify((await out.recipe)![0])}${weUseIndexOrNo((await out.recipe)![1])}.${out.targetProp}`;
         if (splitBySpaces.length < 2) {
-            if (output == null) {
+            if (output == null || await output.recipe == null) {
                 return match;
             }
-            return `.${JSON.stringify(await output.recipe)}.${output.targetProp}`;
+            return cook(output);
         }
-        if (output != null)
-            return `.${JSON.stringify(await output.recipe)}.${output.targetProp}`;
+        if (output != null && await output.recipe != null)
+            return cook(output);
         let result = "";
         for (let index = 0; index < splitBySpaces.length; index++) {
             const element = splitBySpaces[index];
             console.log(element);
             const outputLocal = reverseLookup(element, cssDefs);
-            if (outputLocal != null) {
-                result += `.${JSON.stringify(await outputLocal.recipe)}.${outputLocal.targetProp}`
+            if (outputLocal != null && await outputLocal.recipe != null) {
+                result += await cook(outputLocal);
+            }
+            else {
+                result += `.${element}`;
             }
         }
         return result;

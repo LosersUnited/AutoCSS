@@ -24,7 +24,7 @@ export function pickRandomProperties(obj: any, n: number) {
     const keys = Object.keys(obj);
     const randomKeys: string[] = [];
     if (n >= keys.length) {
-        return keys.map(key => obj[key]);
+        n--;
     }
 
     while (randomKeys.length < n) {
@@ -34,6 +34,21 @@ export function pickRandomProperties(obj: any, n: number) {
         }
     }
     return randomKeys;
+}
+export function pickRandomIndicesFromArr<T>(arr: T[], n: number) {
+    const randomKeys: number[] = [];
+    while (randomKeys.length < n) {
+        const randomKey = Math.floor(Math.random() * arr.length);
+        if (!randomKeys.includes(randomKey)) {
+            randomKeys.push(randomKey);
+        }
+    }
+    return randomKeys;
+}
+export function haveSameKeys(obj1: {}, obj2: {}) {
+    return Object.keys(obj2).every(function (prop) {
+        return obj1.hasOwnProperty(prop);
+    });
 }
 export async function replaceAsync(str: string, regex: any, asyncFn: (...args: any[]) => any) {
     const promises: any[] = [];
