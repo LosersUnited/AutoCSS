@@ -2,7 +2,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { promisify } from 'util';
-import {EvaluatedScript} from "./assets/types";
+import { EvaluatedScript } from "./assets/types";
+import { escapeRegExp, pickRandomProperties, replaceAsync } from './assets/utils';
 const writeFileAsync = promisify(fs.writeFile);
 const readdir = promisify(fs.readdir);
 
@@ -18,21 +19,101 @@ const readdir = promisify(fs.readdir);
 }*/
 
 // thankies shady. regex go brerrr
-const REPLACEMENT_REGEX = /(\[["']\w+.+?]).(\w+)/g;
+const REPLACEMENT_REGEX = /(\[["']\w+.+?])(\[\d+\])?.(\w+)/g;
+const REPLACEMENT_REGEX2 = /\.([a-zA-Z0-9]+\_\_?[a-zA-Z0-9_.-]+)/g;
 
 function replaceClassNamesByRegex(cssString: string, jsonFile: { [key: string]: string }[]): string {
-    return cssString.replace(REPLACEMENT_REGEX, (match, group1: string, group2) => {
-        const modifiedGroup = group1.replace(/'/g, "\""); 
+    return cssString.replace(REPLACEMENT_REGEX, (match, group1: string, index: string, group2) => {
+        const modifiedGroup = group1.replace(/'/g, "\"");
         // JSON.parse can't parse single quotes....?
         const rawProps: string[] = JSON.parse(modifiedGroup); // too lazy
         const toExcludeProps: string[] = [];
         const targetProps = rawProps.filter(x => x.startsWith("!") ? toExcludeProps.push(x) && false : true);
         console.log(match, targetProps);
+        if (index != undefined) {
+            const availableClassNames = jsonFile.filter(x => targetProps.every(key => x && x.hasOwnProperty(key)) && !toExcludeProps.some(key => x && x.hasOwnProperty(key.slice(1))));
+            availableClassNames.sort((a, b) => {
+                const aValues = Object.values(a);
+                const bValues = Object.values(b);
+                return aValues.join().localeCompare(bValues.join());
+            });
+            if (availableClassNames.length > 0) {
+                return availableClassNames[JSON.parse(index)[0]][group2].replace(' ', '.');
+            }
+            return match;
+        }
         const targetClassName = jsonFile.find(x => targetProps.every(key => x && x.hasOwnProperty(key)) && !toExcludeProps.some(key => x && x.hasOwnProperty(key.slice(1))));
         if (targetClassName) {
             return targetClassName[group2].replace(/\s/g,'.');
         }
         return match;
+    });
+}
+
+const prepareMatcherRegexForReverseLookup = (realClassName: string, _calculatedGroup: number) => `(${escapeRegExp(realClassName)}(\\s?\\w+)*)`;
+
+function reverseLookup(realClassName: string, cssDefs: { [key: string]: string }[], matcherRegex = new RegExp(`({|,)(\\w+):"${prepareMatcherRegexForReverseLookup(realClassName, 4)}"`, "g")) {
+    let targetModuleId: string | null = null;
+    // console.log(matcherRegex, realClassName);
+    const targetModule = cssDefs.find(x => {
+        if (
+            x.hasOwnProperty(realClassName) ||
+            // @ts-expect-error
+            x.hasOwnProperty(realClassName, matcherRegex)
+        ) {
+            targetModuleId = x.module;
+            return true;
+        }
+        return false;
+    });
+    if (!targetModule) {
+        console.log(`Reverse lookup for ${realClassName} failed.`);
+        // throw new Error(`Reverse lookup for ${realClassName} failed.`);
+        return null;
+    }
+    const targetProp = Object.keys(targetModule).find(x => targetModule[x] == realClassName || new RegExp("^" + prepareMatcherRegexForReverseLookup(realClassName, 2), "g").test(targetModule[x]));
+    console.log(targetModule);
+    return { recipe: fetcher.conflictSolver(targetModule, targetProp!, targetModuleId!), targetProp };
+    // return { recipe: Promise.resolve([Object.keys(targetModule), undefined] as [string[], number | undefined]), targetProp };
+}
+
+async function replaceClassNamesByRegexInReverse(cssString: string, cssDefs: { [key: string]: string }[]) {
+    return await replaceAsync(cssString, REPLACEMENT_REGEX2, async (match, group1: string) => {
+        // const modifiedGroup = group1.replace('.', ' ');
+        // const output = reverseLookup(modifiedGroup, cssDefs);
+        // if (output == null)
+        //     return match;
+        // return `.${JSON.stringify(await output.recipe)}.${output.targetProp}`;
+        const modifiedGroup = group1.replace(/\./g, ' ');
+        const splitBySpaces = modifiedGroup.split(" ");
+        const output = reverseLookup(modifiedGroup, cssDefs);
+        const weUseIndexOrNo =
+            (indexOrNo: number | undefined) =>
+                (indexOrNo == undefined ? "" : `[${indexOrNo}]`);
+        const cook =
+            async (out: { recipe: Promise<[string[], number | undefined] | null>; targetProp: string | undefined; }) =>
+                `.${JSON.stringify((await out.recipe)![0])}${weUseIndexOrNo((await out.recipe)![1])}.${out.targetProp}`;
+        if (splitBySpaces.length < 2) {
+            if (output == null || await output.recipe == null) {
+                return match;
+            }
+            return cook(output);
+        }
+        if (output != null && await output.recipe != null)
+            return cook(output);
+        let result = "";
+        for (let index = 0; index < splitBySpaces.length; index++) {
+            const element = splitBySpaces[index];
+            console.log(element);
+            const outputLocal = reverseLookup(element, cssDefs);
+            if (outputLocal != null && await outputLocal.recipe != null) {
+                result += await cook(outputLocal);
+            }
+            else {
+                result += `.${element}`;
+            }
+        }
+        return result;
     });
 }
 
@@ -66,8 +147,39 @@ async function startConverting(inputFilePath: string, optionalFilePath: string):
     }
 }
 
+async function startReverseConverting(inputFilePath: string, basePath: string): Promise<void> {
+    const fileName = path.basename(inputFilePath, path.extname(inputFilePath)) + ".raw";
+    const inputParsed = path.relative(basePath, path.parse(inputFilePath).dir);
+    console.log(inputParsed);
+    const outputFolder = 'reverse-build/' + inputParsed;
+    if (!fs.existsSync(outputFolder)) {
+        fs.mkdirSync(outputFolder, { recursive: true });
+    }
+    const outputPath = path.join(outputFolder, fileName);
+    try {
+        if (!fs.existsSync(inputFilePath)) {
+            fs.writeFileSync(inputFilePath, '');
+        }
+
+        const cssString = await fs.promises.readFile(inputFilePath, 'utf8');
+        const cssDefs = await fetcher.fetchFullDiscordCSSDefinitions(true, true);
+        const updatedCSS = await replaceClassNamesByRegexInReverse(cssString, cssDefs);
+        const fileExtension = ".css";
+
+        await writeFileAsync(outputPath + fileExtension, updatedCSS);
+
+        console.log(`Updated CSS has been written to ${outputPath}`);
+    } catch (err) {
+        console.error('Error:', err);
+    }
+}
+
 
 const args: string[] = process.argv.slice(2);
+console.log(args)
+const mode = args.includes("--reverse") ? 1 : 0;
+if (mode != 0)
+    args.splice(args.indexOf("--reverse"), 1);
 if (args.includes("--help") || args.length == 0) {
     console.error('Usage:\n\tnpx ts-node index.ts <file or directory>');
     process.exit(1);
@@ -85,6 +197,9 @@ async function getFiles(dir: string): Promise<string[]> {
 let inputPath: string = args[0];
 console.log(args)
 if (inputPath) {
+    /*     reverseLookup("emojiContainer__07d67").then(out => console.log(out));
+        // @ts-ignore
+        return; */
     let resolvedPath: string = path.resolve(inputPath);
     let optionalFilePath = args[1];
     if (!fs.existsSync(resolvedPath)) {
@@ -96,10 +211,15 @@ if (inputPath) {
             const paths = await getFiles(resolvedPath);
             for (let index = 0; index < paths.length; index++) {
                 const element = paths[index];
-                startConverting(element, optionalFilePath);
+                if (mode == 0)
+                    startConverting(element, optionalFilePath);
+                else if (mode == 1)
+                    startReverseConverting(element, resolvedPath);
             }
         })();
     }
-    else
+    else if (mode == 0)
         startConverting(resolvedPath, optionalFilePath);
+    else if (mode == 1)
+        startReverseConverting(resolvedPath, path.resolve("./"));
 }
