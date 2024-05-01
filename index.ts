@@ -19,8 +19,8 @@ const readdir = promisify(fs.readdir);
 }*/
 
 // thankies shady. regex go brerrr
-const REPLACEMENT_REGEX2 = /\.([a-zA-Z]+\_\_?[a-zA-Z0-9_.-]+)/g;
 const REPLACEMENT_REGEX = /(\[["']\w+.+?])(\[\d+\])?.(\w+)/g;
+const REPLACEMENT_REGEX2 = /\.([a-zA-Z0-9]+\_\_?[a-zA-Z0-9_.-]+)/g;
 
 function replaceClassNamesByRegex(cssString: string, jsonFile: { [key: string]: string }[]): string {
     return cssString.replace(REPLACEMENT_REGEX, (match, group1: string, index: string, group2) => {
