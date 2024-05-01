@@ -13,16 +13,18 @@ To utilize AutoCSS, follow these steps:
 1. Install NodeJS
 [Download Here](https://nodejs.org/en/download)
 
-2. Install pnpm
+2. Open Command Prompt (cmd/terminal)
+
+3. Install pnpm
 ```javascript
 npx pnpm i -g pnpm@latest | npm i -g pnpm@latest
 ```
 
-3. Install dependencies:
+4. Install dependencies:
 ```javascript
 pnpm i
 ```
-4. Execute with given file.
+5. Execute with given file.
 ```javascript
  // <REQUIRED> (OPTIONAL)
  npx ts-node index.ts <fileName> (file extension)
