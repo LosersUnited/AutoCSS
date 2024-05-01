@@ -81,7 +81,7 @@ async function replaceClassNamesByRegexInReverse(cssString: string, cssDefs: { [
         // if (output == null)
         //     return match;
         // return `.${JSON.stringify(await output.recipe)}.${output.targetProp}`;
-        const modifiedGroup = group1.replace('.', ' ');
+        const modifiedGroup = group1.replace(/\./g, ' ');
         const splitBySpaces = modifiedGroup.split(" ");
         const output = reverseLookup(modifiedGroup, cssDefs);
         if (splitBySpaces.length < 2) {
